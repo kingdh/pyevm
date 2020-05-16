@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import collections
 
 from python_eulerian_video_magnification.filter import temporal_ideal_filter
 from python_eulerian_video_magnification.magnify import Magnify
@@ -7,11 +8,33 @@ from python_eulerian_video_magnification.pyramid import gaussian_video
 
 
 class MagnifyColor(Magnify):
-    def _magnify_impl(self, tensor: np.ndarray, fps: int) -> np.ndarray:
-        gau_video = gaussian_video(tensor, levels=self._levels)
-        filtered_tensor = temporal_ideal_filter(gau_video, self._low, self._high, fps)
-        amplified_video = self._amplify_video(filtered_tensor)
-        return self._reconstruct_video(amplified_video, tensor)
+    def _magnify_impl(self, frames, fps: int):
+        gau_video = gaussian_video(frames, levels=self._levels)
+        window_size = self._data['window_size']
+        window = collections.deque([], maxlen=2*window_size)
+
+        step = window_size
+        i = step
+        for frame in gau_video:
+            window.append(frame)
+            if len(window)==window.maxlen:
+                if i >= step:
+                    tensor = np.array(window)
+                    filtered_tensor = temporal_ideal_filter(tensor[0:window_size], self._low, self._high, self.fps)
+                    amplified_video = self._amplify_video(filtered_tensor)
+                    sliced = self._reconstruct_video(amplified_video, tensor)
+                    for f in sliced:
+                        yield f
+                    i = 0
+                else:
+                    i += 1
+        if i>0:
+            tensor = np.array(window)
+            filtered_tensor = temporal_ideal_filter(tensor[-(window_size+i):-1], self._low, self._high, fps)
+            amplified_video = self._amplify_video(filtered_tensor)
+            sliced = self._reconstruct_video(amplified_video, tensor)
+            for f in sliced:
+                yield f
 
     def _amplify_video(self, gaussian_vid):
         return gaussian_vid * self._amplification
@@ -32,6 +55,7 @@ class MagnifyColor(Magnify):
         else:
             return img
 
+    # no use now
     def principal_component_analysis(self, tensor: np.ndarray):
         # Data matrix tensor, assumes 0-centered
         n, m = tensor.shape

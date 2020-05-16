@@ -21,15 +21,16 @@ def build_laplacian_pyramid(src, levels=3):
     return pyramid
 
 
-def gaussian_video(video_tensor, levels=3):
-    for i in range(0, video_tensor.shape[0]):
-        frame = video_tensor[i]
+def gaussian_video(frames, levels=3):
+    for frame in frames:
+        # frame = video_tensor[i]
         pyr = build_gaussian_pyramid(frame, level=levels)
         gaussian_frame = pyr[-1]
-        if i == 0:
-            vid_data = np.zeros((video_tensor.shape[0], gaussian_frame.shape[0], gaussian_frame.shape[1], 3))
-        vid_data[i] = gaussian_frame
-    return vid_data
+        yield gaussian_frame
+    #     if i == 0:
+    #         vid_data = np.zeros((video_tensor.shape[0], gaussian_frame.shape[0], gaussian_frame.shape[1], 3))
+    #     vid_data[i] = gaussian_frame
+    # return vid_data
 
 
 def laplacian_video(video_tensor, levels=3):

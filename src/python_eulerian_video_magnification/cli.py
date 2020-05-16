@@ -152,3 +152,6 @@ def main(args=None):
 
     work = magnify(meta_data)
     work.do_magnify()
+
+if __name__ == "__main__":
+    main()

@@ -24,6 +24,7 @@ class MetaData:
             'mode': mode.name,
             'suffix': suffix,
             'date': None,
+            'window_size': 64
         }
 
     @staticmethod
