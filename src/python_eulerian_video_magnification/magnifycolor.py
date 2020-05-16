@@ -19,7 +19,7 @@ class MagnifyColor(Magnify):
             window.append(frame)
             if len(window)==window.maxlen:
                 if i >= step:
-                    tensor = np.array(window)
+                    tensor = np.array(window, dtype='float')
                     filtered_tensor = temporal_ideal_filter(tensor[0:window_size], self._low, self._high, self.fps)
                     amplified_video = self._amplify_video(filtered_tensor)
                     sliced = self._reconstruct_video(amplified_video, tensor)
@@ -29,8 +29,8 @@ class MagnifyColor(Magnify):
                 else:
                     i += 1
         if i>0:
-            tensor = np.array(window)
-            filtered_tensor = temporal_ideal_filter(tensor[-(window_size+i):-1], self._low, self._high, fps)
+            tensor = np.array(window, dtype='float')
+            filtered_tensor = temporal_ideal_filter(tensor[-(window_size+i):-1], self._low, self._high, self.fps)
             amplified_video = self._amplify_video(filtered_tensor)
             sliced = self._reconstruct_video(amplified_video, tensor)
             for f in sliced:
