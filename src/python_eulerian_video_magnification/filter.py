@@ -11,14 +11,14 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     y = signal.lfilter(b, a, data, axis=0)
     return y
 
-
+# todo: add hamming window? or overlap some frames?
 def temporal_ideal_filter(tensor: np.ndarray, low: float, high: float, fps: int, axis: int = 0) -> np.ndarray:
     fft = fftpack.fft(tensor, axis=axis)
     frequencies = fftpack.fftfreq(tensor.shape[0], d=1.0 / fps)
     bound_low = (np.abs(frequencies - low)).argmin()
     bound_high = (np.abs(frequencies - high)).argmin()
     fft[:bound_low] = 0
-    fft[bound_high:-bound_high] = 0
+    fft[bound_high:-bound_high] = 0  # should it be fft[bound_high:]=0 ???
     fft[-bound_low:] = 0
     iff = fftpack.ifft(fft, axis=axis)
     return np.abs(iff)
