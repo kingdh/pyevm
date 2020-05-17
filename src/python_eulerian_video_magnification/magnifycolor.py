@@ -15,6 +15,7 @@ class MagnifyColor(Magnify):
 
         step = window_size
         i = step
+        j=0
         for frame in gau_video:
             window.append(frame)
             if len(window)==window.maxlen:
@@ -22,7 +23,12 @@ class MagnifyColor(Magnify):
                     tensor = np.array(window, dtype='float')
                     filtered_tensor = temporal_ideal_filter(tensor[0:window_size], self._low, self._high, self.fps)
                     amplified_video = self._amplify_video(filtered_tensor)
-                    sliced = self._reconstruct_video(amplified_video, tensor)
+                    assert(filtered_tensor.shape[0] == window_size)
+                    assert(amplified_video.shape[0]==filtered_tensor.shape[0])
+                    j += amplified_video.shape[0]
+                    sliced = self._reconstruct_video(amplified_video, tensor[0:window_size])
+                    assert(sliced.shape[0] == window_size)
+                    print("processed ", j, " frames")
                     for f in sliced:
                         yield f
                     i = 0
@@ -32,7 +38,9 @@ class MagnifyColor(Magnify):
             tensor = np.array(window, dtype='float')
             filtered_tensor = temporal_ideal_filter(tensor[-(window_size+i):-1], self._low, self._high, self.fps)
             amplified_video = self._amplify_video(filtered_tensor)
-            sliced = self._reconstruct_video(amplified_video, tensor)
+            sliced = self._reconstruct_video(amplified_video, tensor[-(window_size+i):-1])
+            j += window_size + i
+            print("processed ", j, " frames")
             for f in sliced:
                 yield f
 

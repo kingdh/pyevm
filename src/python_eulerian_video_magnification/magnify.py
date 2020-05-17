@@ -15,19 +15,21 @@ class Magnify:
         width, height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv2.CAP_PROP_FPS))
         # video_tensor = np.zeros((frame_count, height, width, 3), dtype='float')
-        # x = 0
+        x = 0
         while cap.isOpened():
             ret, frame = cap.read()
             if ret is True:
                 # video_tensor[x] = frame
+                x += 1
                 yield frame
-                # x += 1
             else:
+                print("total ", x, " frames are read out")
                 break
         # return video_tensor, fps
 
     def save_video(self, frame_itr) -> None:
         # four_cc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+        i = 1
         four_cc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         frame0 = frame_itr.__next__()
         if frame0 is not None:
@@ -36,9 +38,11 @@ class Magnify:
             writer.write(cv2.convertScaleAbs(frame0))
             for frame in frame_itr:
                 writer.write(cv2.convertScaleAbs(frame))
+                i+=1
             # [height, width] = video_tensor[0].shape[0:2]
             # writer = cv2.VideoWriter(self._out_file_name, four_cc, 30, (width, height), 1)
             # for i in range(0, video_tensor.shape[0]):
+            print("total ", i, " frames are written")
             writer.release()
 
     def do_magnify(self) -> None:
