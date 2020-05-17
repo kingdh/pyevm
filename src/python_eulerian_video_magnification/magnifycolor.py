@@ -11,36 +11,39 @@ class MagnifyColor(Magnify):
     def _magnify_impl(self, frames, fps: int):
         gau_video = gaussian_video(frames, levels=self._levels)
         window_size = self._data['window_size']
-        window = collections.deque([], maxlen=2*window_size)
-
+        gau_window = collections.deque([], maxlen=2*window_size)
+        ori_window = collections.deque([], maxlen=2*window_size)
         step = window_size
         i = step
         j=0
-        for frame in gau_video:
-            window.append(frame)
-            if len(window)==window.maxlen:
+        for gau_frame, ori_frame in gau_video:
+            gau_window.append(gau_frame)
+            ori_window.append(ori_frame)
+            if len(gau_window)==gau_window.maxlen:
                 if i >= step:
-                    tensor = np.array(window, dtype='float')
+                    tensor = np.array(gau_window, dtype='float')
+                    ori_tensor = np.array(ori_window, dtype='float')
                     filtered_tensor = temporal_ideal_filter(tensor[0:window_size], self._low, self._high, self.fps)
                     amplified_video = self._amplify_video(filtered_tensor)
                     assert(filtered_tensor.shape[0] == window_size)
                     assert(amplified_video.shape[0]==filtered_tensor.shape[0])
                     j += amplified_video.shape[0]
-                    sliced = self._reconstruct_video(amplified_video, tensor[0:window_size])
+                    sliced = self._reconstruct_video(amplified_video, ori_tensor[0:window_size])
                     assert(sliced.shape[0] == window_size)
                     print("processed ", j, " frames")
                     for f in sliced:
                         yield f
-                    i = 0
+                    i = 1
                 else:
                     i += 1
-        if i>0:
-            tensor = np.array(window, dtype='float')
+        if i>1:
+            tensor = np.array(gau_window, dtype='float')
+            ori_tensor = np.array(ori_window, dtype='float')
             filtered_tensor = temporal_ideal_filter(tensor[-(window_size+i):-1], self._low, self._high, self.fps)
             amplified_video = self._amplify_video(filtered_tensor)
-            sliced = self._reconstruct_video(amplified_video, tensor[-(window_size+i):-1])
-            j += window_size + i
-            print("processed ", j, " frames")
+            sliced = self._reconstruct_video(amplified_video, ori_tensor[-(window_size+i):-1])
+            j += window_size + i -1
+            print("at last processed ", j, " frames")
             for f in sliced:
                 yield f
 

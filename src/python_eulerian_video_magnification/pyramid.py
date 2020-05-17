@@ -26,7 +26,7 @@ def gaussian_video(frames, levels=3):
         # frame = video_tensor[i]
         pyr = build_gaussian_pyramid(frame, level=levels)
         gaussian_frame = pyr[-1]
-        yield gaussian_frame
+        yield gaussian_frame, frame
     #     if i == 0:
     #         vid_data = np.zeros((video_tensor.shape[0], gaussian_frame.shape[0], gaussian_frame.shape[1], 3))
     #     vid_data[i] = gaussian_frame
