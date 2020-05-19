@@ -29,6 +29,7 @@ class Magnify:
 
     def save_video(self, frame_itr) -> None:
         # four_cc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+        # four_cc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
         i = 1
         four_cc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         frame0 = frame_itr.__next__()
@@ -47,9 +48,11 @@ class Magnify:
 
     def do_magnify(self) -> None:
         frames = self.load_video()
-        video_tensor = self._magnify_impl(frames, self.fps)
+        # video_tensor = self._magnify_impl(frames, self.fps)
+        resizer = VideoResizer(0.5)
+        video_tensor = resizer.process(frames)
         self.save_video(video_tensor)
-        self._data.save_meta_data()
+        # self._data.save_meta_data()
 
     def _magnify_impl(self, tensor: np.ndarray, fps: int) -> np.ndarray:
         """for generator style, fps use the class property instead of parameter"""
